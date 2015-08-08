@@ -1,7 +1,7 @@
 /**
  * LocalDateTimeTextFieldSkin.java
  *
- * Copyright (c) 2011-2014, JFXtras
+ * Copyright (c) 2011-2015, JFXtras
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,10 @@
  */
 
 package jfxtras.internal.scene.control.skin;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Calendar;
 
 import javafx.scene.control.SkinBase;
 import javafx.util.Callback;
@@ -70,6 +74,7 @@ public class LocalDateTimeTextFieldSkin extends SkinBase<LocalDateTimeTextField>
 		calendarTextField.styleProperty().bindBidirectional( getSkinnable().styleProperty() );
 		calendarTextField.tooltipProperty().bindBidirectional(getSkinnable().tooltipProperty()); 
 		calendarTextField.textProperty().bindBidirectional( getSkinnable().textProperty() ); 
+                calendarTextField.pickerShowingProperty().bindBidirectional(getSkinnable().pickerShowingProperty());
 
 		// bind it up
 		calendarTextField.localeProperty().bindBidirectional( getSkinnable().localeProperty() );
@@ -79,7 +84,7 @@ public class LocalDateTimeTextFieldSkin extends SkinBase<LocalDateTimeTextField>
 		DateTimeToCalendarHelper.syncLocalDateTime(calendarTextField.calendarProperty(), getSkinnable().localDateTimeProperty(), calendarTextField.localeProperty());
 		DateTimeToCalendarHelper.syncLocalDateTimes(calendarTextField.highlightedCalendars(), getSkinnable().highlightedLocalDateTimes(), calendarTextField.localeProperty());
 		DateTimeToCalendarHelper.syncLocalDateTimes(calendarTextField.disabledCalendars(), getSkinnable().disabledLocalDateTimes(), calendarTextField.localeProperty());
-		
+		DateTimeToCalendarHelper.syncLocalDateTime(calendarTextField.displayedCalendar(), getSkinnable().displayedLocalDateTime(), calendarTextField.localeProperty());
 		// formatter(s) require special attention
 		DateTimeToCalendarHelper.syncDateTimeFormatterForDateTime(calendarTextField.dateFormatProperty(), getSkinnable().dateTimeFormatterProperty());
 		DateTimeToCalendarHelper.syncDateTimeFormattersForDateTime(calendarTextField.dateFormatsProperty(), getSkinnable().dateTimeFormattersProperty());
@@ -92,6 +97,16 @@ public class LocalDateTimeTextFieldSkin extends SkinBase<LocalDateTimeTextField>
 					return null;
 				}
 				return lCallback.call(new LocalDateTimeRange(DateTimeToCalendarHelper.createLocalDateTimeFromCalendar(calendarRange.getStartCalendar()), DateTimeToCalendarHelper.createLocalDateTimeFromCalendar(calendarRange.getEndCalendar())));
+			}
+		});
+		calendarTextField.setValueValidationCallback(new Callback<Calendar, Boolean>() {
+			@Override
+			public Boolean call(Calendar calendar) {
+				Callback<LocalDateTime, Boolean> lCallback = getSkinnable().getValueValidationCallback();
+				if (lCallback == null) {
+					return true;
+				}
+				return lCallback.call(DateTimeToCalendarHelper.createLocalDateTimeFromCalendar(calendar));
 			}
 		});
 	}

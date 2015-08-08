@@ -1,7 +1,7 @@
 /**
  * CalendarTextField.java
  *
- * Copyright (c) 2011-2014, JFXtras
+ * Copyright (c) 2011-2015, JFXtras
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
@@ -52,18 +51,28 @@ import jfxtras.internal.scene.control.skin.CalendarTextFieldSkin;
 import jfxtras.scene.control.CalendarPicker.CalendarRange;
 
 /**
- * A textField which displays a calendar (date) with a icon to popup the CalendarPicker
- * The calendar is (and should) be treated as immutable. That means the Calendar's setters are not used, but when a value is changed a new instance (clone) is put in the calendar property.
- * Features relative mutation options, like -1 or -1d for yesterday, -1m for minus one month, +1w, +2y. # is today.
+ * // These are used for the includes
+ * :control: CalendarTextField 
+ * :control_instance: calendarTextField 
+ * :calendar: calendar
+ * :calendars: calendars
+ * :calendar_class: Calendar
+ * :calendars_class: Calendars 
+ * :dateFormat: dateFormat
+ * :dateFormats: dateFormats
  * 
- * To change the icon use:
- * .CalendarTextField .icon  {
- *     -fx-image: url("AlternateCalendarIcon.jpg");
- * }
- *
+ * = CalendarTextField
+ * include::jfxtras-controls/src/main/asciidoc/scene/control/CalendarTextField_properties.adoc[]
  * The textField can also show time by specifying a DateFormat accordingly, e.g. setDateFormat(SimpleDateFormat.getDateTimeInstance());
+ *
+ * == Callback
+ * include::jfxtras-controls/src/main/asciidoc/scene/control/CalendarTextField_callbacks.adoc[]
  * 
- * @author Tom Eugelink
+ * == Icon
+ * include::jfxtras-controls/src/main/asciidoc/scene/control/CalendarTextField_icon.adoc[]
+ *
+ * == Immutability
+ * include::jfxtras-controls/src/main/asciidoc/scene/control/Calendar_immutability.adoc[]
  */
 public class CalendarTextField extends Control
 {
@@ -99,6 +108,7 @@ public class CalendarTextField extends Control
 				((CalendarTextFieldSkin)newValue).focusForwardingProperty.addListener(focusInvalidationListener);
 			}
 		});
+                constructDisplayedCalendar();
 	}
 	final private InvalidationListener focusInvalidationListener = new InvalidationListener() {
 		@Override
@@ -125,7 +135,7 @@ public class CalendarTextField extends Control
 	/** Id */
 	public CalendarTextField withId(String value) { setId(value); return this; }
 
-	/** Calendar: */
+	/** Calendar: the selected date. */
 	public ObjectProperty<Calendar> calendarProperty() { return calendarObjectProperty; }
 	final private ObjectProperty<Calendar> calendarObjectProperty = new SimpleObjectProperty<Calendar>(this, "calendar", null);
 	public Calendar getCalendar() { return calendarObjectProperty.getValue(); }
@@ -208,13 +218,13 @@ public class CalendarTextField extends Control
 	public void setParseErrorCallback(Callback<Throwable, Void> value) { this.parseErrorCallbackObjectProperty.setValue(value); }
 	public CalendarTextField withParseErrorCallback(Callback<Throwable, Void> value) { setParseErrorCallback(value); return this; }
 
-    /** disabledCalendars: */
-	public ObservableList<Calendar> disabledCalendars() { return disabledCalendars; }
-	final private ObservableList<Calendar> disabledCalendars =  javafx.collections.FXCollections.observableArrayList();
-
-	/** highlightedCalendars: */
+	/** highlightedCalendars: a list of dates that are rendered with the highlight class added. This can then be styled using CSS. */
 	public ObservableList<Calendar> highlightedCalendars() { return highlightedCalendars; }
 	final private ObservableList<Calendar> highlightedCalendars =  javafx.collections.FXCollections.observableArrayList();
+
+    /** disabledCalendars: a list of dates that cannot be selected. */
+	public ObservableList<Calendar> disabledCalendars() { return disabledCalendars; }
+	final private ObservableList<Calendar> disabledCalendars =  javafx.collections.FXCollections.observableArrayList();
 
 	/** calendarRangeCallback: 
 	 * This callback allows a developer to limit the amount of calendars put in any of the collections.
@@ -225,8 +235,35 @@ public class CalendarTextField extends Control
 	public Callback<CalendarRange, Void> getCalendarRangeCallback() { return this.calendarRangeCallbackObjectProperty.getValue(); }
 	public void setCalendarRangeCallback(Callback<CalendarRange, Void> value) { this.calendarRangeCallbackObjectProperty.setValue(value); }
 	public CalendarTextField withCalendarRangeCallback(Callback<CalendarRange, Void> value) { setCalendarRangeCallback(value); return this; }
+	
+	/** valueValidationCallback: 
+	 * This callback allows a developer deny or accept a value just prior before it gets added.
+	 * Returning true will allow the value.
+	 */
+	public ObjectProperty<Callback<Calendar, Boolean>> valueValidationCallbackProperty() { return valueValidationCallbackObjectProperty; }
+	final private ObjectProperty<Callback<Calendar, Boolean>> valueValidationCallbackObjectProperty = new SimpleObjectProperty<Callback<Calendar, Boolean>>(this, "valueValidationCallback", null);
+	public Callback<Calendar, Boolean> getValueValidationCallback() { return this.valueValidationCallbackObjectProperty.getValue(); }
+	public void setValueValidationCallback(Callback<Calendar, Boolean> value) { this.valueValidationCallbackObjectProperty.setValue(value); }
+	public CalendarTextField withValueValidationCallback(Callback<Calendar, Boolean> value) { setValueValidationCallback(value); return this; }
 
-	/** is null allowed */
+    /**
+	 * DisplayedCalendar:
+	 * You may set this value, but it is also overwritten by other logic and the skin. Do not assume you have total control.
+	 * The calendar should not be modified using any of its add or set methods (it should be considered immutable)
+	 */
+	public ObjectProperty<Calendar> displayedCalendar() { return displayedCalendarObjectProperty; }
+	volatile private ObjectProperty<Calendar> displayedCalendarObjectProperty = new SimpleObjectProperty<Calendar>(this, "displayedCalendar");
+	public Calendar getDisplayedCalendar() { return displayedCalendarObjectProperty.getValue(); }
+	public void setDisplayedCalendar(Calendar value) { displayedCalendarObjectProperty.setValue(value); }
+	public CalendarTextField withDisplayedCalendar(Calendar value) { setDisplayedCalendar(value); return this; }
+	private void constructDisplayedCalendar()
+	{
+		// init here, so deriveDisplayedCalendar in the skin will modify it accordingly
+		setDisplayedCalendar(Calendar.getInstance(getLocale()));
+	}
+        
+	/** AllowNull: indicates if no selected date (resulting in null in the calendar property) is an allowed state. */
+    public BooleanProperty allowNullProperty() { return allowNullProperty; }
     volatile private BooleanProperty allowNullProperty = new SimpleBooleanProperty(this, "allowNull", true)
     {
 		public void set(boolean value)
@@ -238,7 +275,6 @@ public class CalendarTextField extends Control
 			}
 		}
 	};
-    public BooleanProperty allowNullProperty() { return allowNullProperty; }
     public boolean getAllowNull() { return allowNullProperty.get(); }
     public void setAllowNull(boolean allowNull) { allowNullProperty.set(allowNull); }
     public CalendarTextField withAllowNull(boolean value) { setAllowNull(value); return this; }
@@ -250,11 +286,13 @@ public class CalendarTextField extends Control
 	public void setText(String value) { textObjectProperty.set(value); }
 	public CalendarTextField withText(String value) { setText(value); return this; }
 
-    
-	// ==================================================================================================================
-	// EVENTS
-	
-	// ==================================================================================================================
-	// BEHAVIOR
-	
+    /**
+     * Represents the current state of the Picker popup, and whether it is
+     * currently visible on screen.
+     */
+    public BooleanProperty pickerShowingProperty() { return pickerShowingProperty; }
+    final private BooleanProperty pickerShowingProperty = new SimpleBooleanProperty();
+    public boolean isPickerShowing() { return pickerShowingProperty.get(); }
+    public void setPickerShowing(boolean value) { pickerShowingProperty.set(value); }
+	public CalendarTextField withPickerShowing(boolean value) { setPickerShowing(value); return this; }
 }

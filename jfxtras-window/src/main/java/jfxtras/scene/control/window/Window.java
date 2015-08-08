@@ -1,7 +1,7 @@
 /**
  * Window.java
  *
- * Copyright (c) 2011-2014, JFXtras
+ * Copyright (c) 2011-2015, JFXtras
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -216,7 +216,7 @@ public class Window extends Control implements SelectableNode {
     }
 
     @Override
-    protected String getUserAgentStylesheet() {
+    public String getUserAgentStylesheet() {
         return this.getClass().getResource(DEFAULT_STYLE).toExternalForm();
     }
 

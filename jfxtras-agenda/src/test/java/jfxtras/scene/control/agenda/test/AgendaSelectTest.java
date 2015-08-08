@@ -1,7 +1,7 @@
 /**
- * LocalDatePickerTest.java
+ * AgendaSelectTest.java
  *
- * Copyright (c) 2011-2014, JFXtras
+ * Copyright (c) 2011-2015, JFXtras
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,6 @@ public class AgendaSelectTest extends AbstractAgendaTestBase {
 	{
 		return super.getRootNode();
 	}
-
 
 	/**
 	 * 
@@ -160,24 +159,28 @@ public class AgendaSelectTest extends AbstractAgendaTestBase {
 		
 		// when
 		click("#AppointmentRegularBodyPane2014-01-01/0"); // select first
+		TestUtil.sleep(500); // TODO: this should not be needed!
 		Assert.assertEquals(1, agenda.selectedAppointments().size() );
 		
 		// when
 		press(KeyCode.CONTROL);
 		click("#AppointmentRegularBodyPane2014-01-01/1"); // select second
 		release(KeyCode.CONTROL);
+		TestUtil.sleep(500); // TODO: this should not be needed!
 		Assert.assertEquals(2, agenda.selectedAppointments().size() );
 		
 		// when
 		press(KeyCode.CONTROL);
 		click("#AppointmentRegularBodyPane2014-01-01/1"); // select again (deselects)
 		release(KeyCode.CONTROL);
+		TestUtil.sleep(500); // TODO: this should not be needed!
 		Assert.assertEquals(1, agenda.selectedAppointments().size() );
 		
 		// when
 		press(KeyCode.CONTROL);
 		click("#AppointmentRegularBodyPane2014-01-01/0"); // select again (deselects)
 		release(KeyCode.CONTROL);
+		TestUtil.sleep(500); // TODO: this should not be needed!
 		Assert.assertEquals(0, agenda.selectedAppointments().size() );
 		//TestUtil.sleep(3000);
 	}
@@ -245,5 +248,39 @@ public class AgendaSelectTest extends AbstractAgendaTestBase {
 		Assert.assertEquals(0, agenda.selectedAppointments().size() );
 		
 		// TestUtil.sleep(3000);
+	}
+
+	/**
+	 * 
+	 */
+	@Test
+	public void selectSingleWithDragNotAllowed()
+	{
+		// given
+		TestUtil.runThenWaitForPaintPulse( () -> {
+			agenda.appointments().add( new Agenda.AppointmentImplLocal()
+	            .withStartLocalDateTime(TestUtil.quickParseLocalDateTimeYMDhm("2014-01-01T10:00"))
+	            .withEndLocalDateTime(TestUtil.quickParseLocalDateTimeYMDhm("2014-01-01T12:00"))
+	            .withAppointmentGroup(appointmentGroupMap.get("group01"))
+            );
+			agenda.withAllowDragging(false);
+		});
+		Assert.assertEquals(1, agenda.appointments().size() );
+		Assert.assertEquals(0, agenda.selectedAppointments().size() );
+		
+		// when
+		click("#AppointmentRegularBodyPane2014-01-01/0");
+		
+		// then
+		Assert.assertEquals(1, agenda.appointments().size() );
+		Assert.assertEquals(1, agenda.selectedAppointments().size() );
+		
+		// when
+		click("#hourLine15");
+		
+		// then
+		Assert.assertEquals(1, agenda.appointments().size() );
+		Assert.assertEquals(0, agenda.selectedAppointments().size() );
+		//TestUtil.sleep(3000);
 	}
 }

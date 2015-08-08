@@ -1,7 +1,7 @@
 /**
- * LocalDatePickerTest.java
+ * AgendaMouseManipulateTest.java
  *
- * Copyright (c) 2011-2014, JFXtras
+ * Copyright (c) 2011-2015, JFXtras
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -157,7 +157,8 @@ public class AgendaMouseManipulateTest extends AbstractAgendaTestBase {
 	            .withAppointmentGroup(appointmentGroupMap.get("group01"))
             );
 		});
-				
+		
+		Assert.assertEquals(1, agenda.appointments().size() );	
 		move("#AppointmentRegularBodyPane2014-01-01/0 .DurationDragger"); 
 		press(MouseButton.PRIMARY);
 		move("#hourLine15");
@@ -326,6 +327,52 @@ public class AgendaMouseManipulateTest extends AbstractAgendaTestBase {
 		Assert.assertEquals(1, agenda.appointments().size() );
 		Assert.assertEquals("2014-01-02T01:00", agenda.appointments().get(0).getStartLocalDateTime().toString() );
 		Assert.assertTrue(agenda.appointments().get(0).isWholeDay());
+		//TestUtil.sleep(3000);
+	}
+
+	/**
+	 * 
+	 */
+	@Test
+	public void attemptExtendAppointmentByDraggingWhenNotAllowed()
+	{
+		TestUtil.runThenWaitForPaintPulse( () -> {
+			agenda.appointments().add( new Agenda.AppointmentImplLocal()
+	            .withStartLocalDateTime(TestUtil.quickParseLocalDateTimeYMDhm("2014-01-01T10:00"))
+	            .withEndLocalDateTime(TestUtil.quickParseLocalDateTimeYMDhm("2014-01-01T12:00"))
+	            .withAppointmentGroup(appointmentGroupMap.get("group01"))
+            );
+			agenda.withAllowResize(false);
+		});
+				
+		assertNotFind("#AppointmentRegularBodyPane2014-01-01/0 .DurationDragger"); 
+		//TestUtil.sleep(3000);
+	}
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void attemptDragRegularAppointmentWhenNotAllowed()
+	{
+		TestUtil.runThenWaitForPaintPulse( () -> {
+			agenda.appointments().add( new Agenda.AppointmentImplLocal()
+	            .withStartLocalDateTime(TestUtil.quickParseLocalDateTimeYMDhm("2014-01-01T10:00"))
+	            .withEndLocalDateTime(TestUtil.quickParseLocalDateTimeYMDhm("2014-01-01T12:00"))
+	            .withAppointmentGroup(appointmentGroupMap.get("group01"))
+            );
+			agenda.withAllowDragging(false);
+		});
+		assertFind("#AppointmentRegularBodyPane2014-01-01/0"); 
+				
+		move("#hourLine11"); // the pane is beneath the mouse now since it runs from 10 to 12
+		press(MouseButton.PRIMARY);
+		move("#hourLine15");
+		release(MouseButton.PRIMARY);
+		
+		Assert.assertEquals(1, agenda.appointments().size() );
+		Assert.assertEquals("2014-01-01T10:00", agenda.appointments().get(0).getStartLocalDateTime().toString() );
+		Assert.assertEquals("2014-01-01T12:00", agenda.appointments().get(0).getEndLocalDateTime().toString() );
 		//TestUtil.sleep(3000);
 	}
 }

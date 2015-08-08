@@ -1,7 +1,7 @@
 /**
  * JFXtrasGuiTest.java
  *
- * Copyright (c) 2011-2014, JFXtras
+ * Copyright (c) 2011-2015, JFXtras
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.loadui.testfx.GuiTest;
 import org.loadui.testfx.exceptions.NoNodesFoundException;
+import org.loadui.testfx.exceptions.NoNodesVisibleException;
 
 /**
  * 
@@ -139,6 +140,16 @@ abstract public class JFXtrasGuiTest extends org.loadui.testfx.GuiTest {
 			Assert.assertTrue("Should not have found '" + string + "', but did anyway", false);
 		}
 		catch (NoNodesFoundException e) {
+			// all is well
+		}
+	}
+
+	protected void assertNotVisible(String string) {
+		try {
+			find(string);
+			Assert.assertTrue("Should not have found '" + string + "', but did anyway", false);
+		}
+		catch (NoNodesVisibleException e) {
 			// all is well
 		}
 	}
