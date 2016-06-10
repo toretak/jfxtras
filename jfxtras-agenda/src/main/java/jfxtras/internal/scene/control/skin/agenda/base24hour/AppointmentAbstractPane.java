@@ -274,10 +274,13 @@ abstract class AppointmentAbstractPane extends Pane {
      * @param dragDropDateTime
      */
     private void handleDrop(Agenda.Appointment appointment, LocalDateTime dragPickupDateTime, LocalDateTime dragDropDateTime) {
-        if (!this.handleDrop()) {
-            return;
-        }
+        LocalDateTime start = appointment.getStartLocalDateTime();
+        LocalDateTime end = appointment.getEndLocalDateTime();
         handleDrag(appointment, dragPickupDateTime, dragDropDateTime);
+        if (!this.handleDrop()) {
+            this.appointment.setStartLocalDateTime(start);
+            this.appointment.setEndLocalDateTime(end);
+        }
     }
 
     /**
@@ -375,6 +378,18 @@ abstract class AppointmentAbstractPane extends Pane {
         Callback<Appointment, Boolean> lCallback = layoutHelp.skinnable.getDropCallback();
         if (lCallback != null) {
             return lCallback.call(appointment);
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean handleResize(Appointment a) {
+        Callback<Appointment, Boolean> lCallback = layoutHelp.skinnable.getResizeCallback();
+        if (lCallback != null) {
+            return lCallback.call(a);
         }
         return true;
     }

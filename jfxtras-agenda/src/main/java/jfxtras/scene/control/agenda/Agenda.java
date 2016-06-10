@@ -550,7 +550,7 @@ public class Agenda extends Control {
     public ObjectProperty<Callback<Appointment, Boolean>> dropCallbackProperty() {
         return dropCallbackObjectProperty;
     }
-    final private ObjectProperty<Callback<Appointment, Boolean>> dropCallbackObjectProperty = new SimpleObjectProperty<Callback<Appointment, Boolean>>(this, "dropCallback", null);
+    final private ObjectProperty<Callback<Appointment, Boolean>> dropCallbackObjectProperty = new SimpleObjectProperty<>(this, "dropCallback", null);
 
     public void setDropCallback(Callback<Appointment, Boolean> value) {
         this.dropCallbackObjectProperty.setValue(value);
@@ -558,6 +558,24 @@ public class Agenda extends Control {
 
     public Callback<Appointment, Boolean> getDropCallback() {
         return this.dropCallbackObjectProperty.getValue();
+    }
+
+    /**
+     * dropCallback: This triggered when appointment is resized
+     *
+     * @return
+     */
+    public ObjectProperty<Callback<Appointment, Boolean>> resizeCallbackProperty() {
+        return dropCallbackObjectProperty;
+    }
+    final private ObjectProperty<Callback<Appointment, Boolean>> resizeCallbackObjectProperty = new SimpleObjectProperty<>(this, "resizeCallback", null);
+
+    public void setResizeCallback(Callback<Appointment, Boolean> value) {
+        this.resizeCallbackObjectProperty.setValue(value);
+    }
+
+    public Callback<Appointment, Boolean> getResizeCallback() {
+        return this.resizeCallbackObjectProperty.getValue();
     }
 
     /**
